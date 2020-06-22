@@ -2,7 +2,7 @@
 
 # Bexs Bank Coding Test - Trip Route Search
 
-Coding test developed for Bexs position as Senior Backend, with the goal of building a CLI & REST service for querying the cheapest trip route from origin to destination (details can be found [here](https://github.com/davikawasaki/bexs-coding-test/blob/master/ABOUT.md).
+Coding test developed for Bexs position as Senior Backend, with the goal of building a CLI & REST service for querying the cheapest trip route from origin to destination (details can be found [here](https://github.com/davikawasaki/bexs-coding-test/blob/master/ABOUT.md)).
 
 Requirements for the REST API:
 
@@ -267,7 +267,7 @@ Therefore, the algorithm solution uses recursion, always searching the cheapest 
 
 In order to split the responsibilities, the main route logic was separated into a package, exposed as an interface to the command-line interface and the REST HTTP server. At the same rate, other responsibilities were split into service packages, such as a CSV parser to read/write the input routes file, as well as string/file parsers that combines methods into utilities (e.g. trim and upper a string for the origin/destination code comparison).
 
-### Decision over Go
+### Decisions over Go
 
 The decision over Go instead of a main-used language in my stack such as Javascript was due to the following points:
 
