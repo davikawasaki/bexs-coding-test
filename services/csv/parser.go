@@ -52,7 +52,7 @@ func Write(path string, csvData [][]string) (error, [][]string) {
 	}
 
 	if path == "" {
-		return errors.New("Path is empty and file can't be read!"), nil
+		return errors.New("Couldn't open an empty path"), nil
 	}
 
 	dataVals := [][]string{}

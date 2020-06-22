@@ -64,7 +64,6 @@ func AfterTestWriteCsv(filePaths []string) {
 		os.Remove(item)
 	}
 }
-
 func TestWriteCsv(t *testing.T) {
 	inputPathFile1 := "testdata/file1.csv"
 	outputFile1 := [][]string{
@@ -111,7 +110,6 @@ func TestWriteCsv(t *testing.T) {
 
 	AfterTestWriteCsv(outputPaths)
 }
-
 func TestCreateWrite(t *testing.T) {
 	inputPathFile1 := "testdata/createwrite_test1.csv"
 	outputFile1 := [][]string{
@@ -146,4 +144,83 @@ func TestCreateWrite(t *testing.T) {
 	}
 
 	AfterTestWriteCsv([]string{inputPathFile1, inputPathFile2})
+}
+
+func TestEmptyDataCreateWrite(t *testing.T) {
+	inputPathFile1 := "testdata/createwrite_test1.csv"
+	inputPathFile2 := "testdata/createwrite_test1.csv"
+
+	dataWriteItems := []TestDataItem{
+		{inputPathFile1, nil},
+		{inputPathFile2, nil},
+	}
+
+	for _, item := range dataWriteItems {
+		err, result := CreateWrite(item.inputPath, item.outputData)
+
+		if err != nil && err.Error() == "No data to be written." && len(result) == 0 {
+			t.Logf("csvparser.CreateWrite() from path %v PASSED, expected an error 'No data to be written.' and got an error '%v'", item.inputPath, err.Error())
+		} else {
+			t.Errorf("csvparser.CreateWrite() from path %v FAILED, expected an error 'No data to be written.' but got no error", item.inputPath)
+		}
+	}
+
+	AfterTestWriteCsv([]string{inputPathFile1, inputPathFile2})
+}
+
+func TestEmptyDataWrite(t *testing.T) {
+	inputPathFile1 := "testdata/file1.csv"
+	inputPathFile2 := "testdata/file2.csv"
+
+	outputPaths := BeforeTestWriteCsv([]string{inputPathFile1, inputPathFile2})
+	dataWriteItems := []TestDataItem{
+		{outputPaths[0], nil},
+		{outputPaths[1], nil},
+	}
+
+	for _, item := range dataWriteItems {
+		errWrite, writeResult := Write(item.inputPath, nil)
+
+		if errWrite != nil && errWrite.Error() == "No data to be written." && len(writeResult) == 0 {
+			t.Logf("csvparser.Write() from path %v PASSED, expected an error 'No data to be written.' and got an error '%v'", item.inputPath, errWrite.Error())
+		} else {
+			t.Errorf("csvparser.Write() from path %v FAILED, expected an error 'No data to be written.' but got no error", item.inputPath)
+		}
+	}
+
+	AfterTestWriteCsv(outputPaths)
+}
+
+func TestEmptyPathCreateWrite(t *testing.T) {
+	dataWriteItems := []TestDataItem{
+		{"", [][]string{}},
+		{"", [][]string{}},
+	}
+
+	for _, item := range dataWriteItems {
+		err, result := CreateWrite(item.inputPath, item.outputData)
+
+		if err != nil && err.Error() == "Couldn't open an empty path" && len(result) == 0 {
+			t.Logf("csvparser.CreateWrite() from path %v PASSED, expected an error 'Couldn't open an empty path' and got an error '%v'", item.inputPath, err.Error())
+		} else {
+			t.Errorf("csvparser.CreateWrite() from path %v FAILED, expected an error 'Couldn't open an empty path' but got no error", item.inputPath)
+		}
+	}
+}
+
+func TestEmptyPathWrite(t *testing.T) {
+	dataWriteItems := []TestDataItem{
+		{"", [][]string{}},
+		{"", [][]string{}},
+	}
+
+	for _, item := range dataWriteItems {
+		errWrite, writeResult := Write(item.inputPath, item.outputData)
+
+		if errWrite != nil && errWrite.Error() == "Couldn't open an empty path" && len(writeResult) == 0 {
+			t.Logf("csvparser.Write() from path %v PASSED, expected an error 'Couldn't open an empty path' and got an error '%v'", item.inputPath, errWrite.Error())
+		} else {
+			t.Errorf("csvparser.Write() from path %v FAILED, expected an error 'Couldn't open an empty path' but got no error", item.inputPath)
+		}
+	}
 }
