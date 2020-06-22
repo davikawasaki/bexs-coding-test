@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"errors"
 	"sort"
 )
 
@@ -63,7 +64,7 @@ func (r *Routes) GetAllAirports() []*Airport {
 
 func (r *Routes) HasConnection(from *Airport, to *Airport) bool {
 	for _, c := range r.connections {
-		if c.from == from && c.to == to {
+		if c.from.code == from.code && c.to.code == to.code {
 			return true
 		}
 	}
@@ -102,22 +103,30 @@ func (r *Routes) GetConnectionsFromAirport(airport *Airport) (connections []*Con
 	return connections
 }
 
-func (r *Routes) BestPriceRoute(from *Airport, to *Airport, accumulatedPath []string, accumulatedPrice uint64) (bool, []string, uint64) {
+func (r *Routes) BestPriceRoute(from *Airport, to *Airport, origin *Airport, accumulatedPath []string, accumulatedPrice uint64) (error, bool, []string, uint64) {
+	if from.code == to.code && from.code == origin.code && to.code == origin.code {
+		return errors.New("No circular path is allowed."), false, nil, 0
+	}
+
 	pathConnectionPrices := []*PathConnectionPrice{}
 
 	// Get all connections from airport node
 	connections := r.GetConnectionsFromAirport(from)
 
-	if from.code == to.code {
+	if from.code == to.code && from.code != origin.code {
 		// Reached destination, but it might be not the end of the path. We end the path here
-		return true, append(accumulatedPath, from.code), accumulatedPrice
+		return nil, true, append(accumulatedPath, from.code), accumulatedPrice
 	} else if len(connections) == 0 {
 		// Reached last node point. Should not continue
-		return false, append(accumulatedPath, from.code), accumulatedPrice
+		return nil, false, append(accumulatedPath, from.code), accumulatedPrice
 	} else {
 		// Loop through each connection to get their path price
 		for _, conn := range connections {
-			hasLastDestination, recursionPath, recursionPrice := r.BestPriceRoute(conn.to, to, append(accumulatedPath, from.code), (accumulatedPrice + conn.price))
+			if origin.code != to.code && conn.to.code == origin.code {
+				// Avoid circular loop
+				continue
+			}
+			_, hasLastDestination, recursionPath, recursionPrice := r.BestPriceRoute(conn.to, to, origin, append(accumulatedPath, from.code), (accumulatedPrice + conn.price))
 
 			// Append path only if it has the last node destination
 			if hasLastDestination {
@@ -132,9 +141,9 @@ func (r *Routes) BestPriceRoute(from *Airport, to *Airport, accumulatedPath []st
 		})
 
 		if len(pathConnectionPrices) == 0 {
-			return false, append(accumulatedPath, from.code), accumulatedPrice
+			return nil, false, append(accumulatedPath, from.code), accumulatedPrice
 		} else {
-			return pathConnectionPrices[0].hasLastDestination, pathConnectionPrices[0].airportCodePath, pathConnectionPrices[0].totalPrice
+			return nil, pathConnectionPrices[0].hasLastDestination, pathConnectionPrices[0].airportCodePath, pathConnectionPrices[0].totalPrice
 		}
 	}
 }
