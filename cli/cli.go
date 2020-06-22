@@ -52,7 +52,9 @@ func main() {
 		buf := bufio.NewReader(os.Stdin)
 		fmt.Print("\nplease enter the route: ")
 		sentence, err := buf.ReadBytes('\n')
-		if err != nil {
+		if utils.TrimAndUpper(string(sentence)) == "EXIT" {
+			break
+		} else if err != nil {
 			fmt.Print(err)
 		} else {
 			splitRoutes := strings.Split(string(sentence), "-")
@@ -68,7 +70,7 @@ func main() {
 				} else if routes.FindAirportByCode(splitRoutes[1]) == nil {
 					fmt.Printf("destination %v not found. try inserting an existent destination or add a route with this destination.", splitRoutes[1])
 				} else {
-					_, path, price := routes.BestPriceRoute(from, to, []string{}, 0)
+					_, _, path, price := routes.BestPriceRoute(from, to, from, []string{}, 0)
 					pathString := strings.Join(path, " - ")
 
 					if len(path) == 1 && price == 0 {
@@ -81,9 +83,6 @@ func main() {
 			} else {
 				fmt.Printf("invalid input %v. format must be XXX-XXX, try again", strings.Trim(string(sentence), "\t \n"))
 			}
-		}
-		if string(sentence) == "exit" {
-			break
 		}
 	}
 }
